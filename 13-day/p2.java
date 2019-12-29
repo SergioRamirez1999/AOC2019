@@ -18,22 +18,6 @@ import java.util.stream.Stream;
 
 public class p2 {
 
-    private static Map<Position, Integer> init_map(Computer computer){
-        Map<Position, Integer> map_game_object = new HashMap<>();
-        while(!computer.isHalted()){
-            computer.step();
-            if(computer.getStdout().size() == 3){
-                Long x = computer.getStdout().poll();
-                Long y = computer.getStdout().poll();
-                Long object = computer.getStdout().poll();
-                map_game_object.put(new Position(x.intValue(),y.intValue()), object.intValue());
-            }
-        }
-
-        return map_game_object;
-    }
-
-    
 	public static void main(String[] args) {
         Computer computer = new Computer();
 		computer.getPrograms().set(0, 2L);
@@ -76,9 +60,6 @@ public class p2 {
 		}
 
 		System.out.println(score);
-
-
-
 
 	}
 
