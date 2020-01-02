@@ -17,73 +17,89 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class p1 {
+public class p2 {
 
-    private static String determine_map(Computer computer){
-        String map = "";
-        while(!computer.isHalted()){
-            computer.step();
-            if(!computer.getStdout().isEmpty())
-                map += (char)computer.getStdout().poll().intValue();
-        }
+		/*
+			12345678901234567890
+		A = L,6,R,12,L,6
+		B = R,12,L,10,L,4,L,6
+		C = L,10,L,10,L,4,L,6
 
-        return map;
-    }
+		Main routine = A,B,A,B,A,C,B,C,A,C
 
-    private static List<Position> get_adyacents(Position scaffold){
-        //las diagonales no se toman como adyacentes
-        List<Position> adyacents = new ArrayList<>();
-        adyacents.add(new Position(scaffold.getX()-1, scaffold.getY())); //left
-        adyacents.add(new Position(scaffold.getX()+1, scaffold.getY())); //right
-        adyacents.add(new Position(scaffold.getX(), scaffold.getY()-1)); //up
-        adyacents.add(new Position(scaffold.getX(), scaffold.getY()+1)); //down
-        return adyacents;
-    }
+		A
+		B
+		A
+		B
+		A
+		C
+		B
+		C
+		A
+		C
 
-    private static List<Position> get_scaffolds(String map){
-        List<String> lines = Arrays.asList(map.split("\n"));
-        List<Position> scaffolds = new ArrayList<>();
 
-        for(int r = 0; r < lines.size(); r++){
-            String line = lines.get(r);
-            for(int c = 0; c < line.length(); c++){
-                if(line.charAt(c) == '#')
-                    scaffolds.add(new Position(c,r));
-            }
-        }
+		L 6     x
+		R 12    x
+		L 6     x
+		R 12    x
+		L 10    x
+		L 4     x
+		L 6     x
+		L 6     x
+		R 12    x
+		L 6     x
+		R 12    x
+		L 10    x
+		L 4     x
+		L 6     x
+		L 6     x
+		R 12    x
+		L 6     x
+		L 10    x
+		L 10    x
+		L 4     x
+		L 6     x
+		R 12    x
+		L 10    x
+		L 4     x
+		L 6     x
+		L 10    x
+		L 10    x
+		L 4     x
+		L 6     x
+		L 6     x
+		R 12    x
+		L 6     x
+		L 10    x
+		L 10    x
+		L 4     x
+		L 6     x
+	*/
 
-        return scaffolds;
-    }
-
-    private static List<Position> get_aligment_parameters(List<Position> scaffolds){
-        Map<Position, Integer> scaffold_adyacents = new HashMap<>(); //k: scaffold, v: nadyacents
-        for(Position scaffold: scaffolds){
-            scaffold_adyacents.put(scaffold, 0);
-            for(Position ady: get_adyacents(scaffold)){
-                if(scaffolds.contains(ady))
-                    scaffold_adyacents.put(scaffold, scaffold_adyacents.get(scaffold)+1);
-            }
-        }
-
-        List<Position> intersections = scaffold_adyacents.entrySet().stream()
-                                .filter(kv -> kv.getValue() == 4)
-                                .map(kv -> kv.getKey())
-                                .collect(Collectors.toList());
-
-        return intersections;
-    }
-
-    private static Integer sum_aligment_parameters(List<Position> intersections){
-        return intersections.stream().map(p -> p.getX()*p.getY()).reduce((p1,p2) -> p1+p2).get();
-    }
 
 	public static void main(String[] args) {
         Computer computer = new Computer();
-		String map = determine_map(computer);
-        List<Position> scaffolds = get_scaffolds(map);
-        List<Position> intersections = get_aligment_parameters(scaffolds);
-        Integer result = sum_aligment_parameters(intersections);
-        System.out.println(result);
+		
+		String main_functions = "A,B,A,B,A,C,B,C,A,C\n";
+		String a_function = "L,6,R,12,L,6\n";
+		String b_function = "R,12,L,10,L,4,L,6\n";
+		String c_functions = "L,10,L,10,L,4,L,6\n";
+		String camera = "n\n";
+
+		String main_routine = main_functions+a_function+b_function+c_functions+camera;
+
+		LinkedList<Long> stdin = main_routine.chars().mapToObj(Long::valueOf).collect(Collectors.toCollection(LinkedList::new));
+		
+		computer.getPrograms().setInfinite(0, 2L);
+		computer.setStdin(stdin);
+
+		computer.simulate();
+
+		Long space_dust = computer.getStdout().getLast();
+		
+		System.out.println(space_dust);
+
 	}
 
 }
