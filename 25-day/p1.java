@@ -1,6 +1,7 @@
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -13,49 +14,141 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class p1 {
 
+    private static Map<String, List<Long>> init_commands(){
+        Map<String, List<Long>> commands = new HashMap<>();
+        commands.put("north", Arrays.asList(110L, 111L, 114L, 116L, 104L, 10L));
+        commands.put("south", Arrays.asList(115L, 111L, 117L, 116L, 104L, 10L));
+        commands.put("east", Arrays.asList(101L, 97L, 115L, 116L, 10L));
+        commands.put("west", Arrays.asList(119L, 101L, 115L, 116L, 10L));
+        commands.put("take", Arrays.asList(116L, 97L, 107L, 101L, 32L));
+        commands.put("drop", Arrays.asList(100L, 114L, 111L, 112L, 32L));
+        commands.put("inventory", Arrays.asList(105L, 110L, 118L, 10L));
+
+        return commands;
+    }
+
+    private static void print_output(LinkedList<Long> stdout){
+        String text = "";
+        for(Long c: stdout){
+            text+=(char)c.intValue();
+        }
+        System.out.println(text);
+        stdout.clear();
+    }
+
+    private static void input_commands(Scanner scanner, Computer computer, Map<String, List<Long>> commands, LinkedList<String> way_presure_sensitive_room, List<String> CMDS){
+		String line = "";
+		String[] input = null;
+		String command = "";
+		if(way_presure_sensitive_room.isEmpty())
+			if(CMDS.isEmpty()){
+				line = scanner.nextLine();
+			}else {
+				line = CMDS.get(0);
+				CMDS.remove(0);
+			}
+		else
+			line = way_presure_sensitive_room.poll();
+
+		input = line.split(" ");
+		command = input[0];
+		switch(command){
+			case "north":
+				computer.getStdin().addAll(commands.get("north"));
+				break;
+			case "south":
+				computer.getStdin().addAll(commands.get("south"));
+				break;
+			case "east":
+				computer.getStdin().addAll(commands.get("east"));
+				break;
+			case "west":
+				computer.getStdin().addAll(commands.get("west"));
+				break;
+			case "take":
+				computer.getStdin().addAll(commands.get("take"));
+				for(int i = 1; i < input.length; i++){
+					computer.getStdin().addAll(input[i].chars().mapToObj(Long::valueOf).collect(Collectors.toList()));
+					if(i < input.length-1)
+						computer.getStdin().add(32L);
+				}
+				computer.getStdin().add(10L);
+				break;
+			case "drop":
+				computer.getStdin().addAll(commands.get("drop"));
+				for(int i = 1; i < input.length; i++){
+					computer.getStdin().addAll(input[i].chars().mapToObj(Long::valueOf).collect(Collectors.toList()));
+					if(i < input.length-1)
+						computer.getStdin().add(32L);
+				}
+				computer.getStdin().add(10L);
+				break;
+			case "inv":
+				computer.getStdin().addAll(commands.get("inventory"));
+				break;
+			case "exit":
+				computer.setHalted(true);
+		}
+
+    }
+
 
 	public static void main(String[] args) {
+        Map<String, List<Long>> commands = init_commands();
+        Computer computer = new Computer();
+		Scanner scanner = new Scanner(System.in);
+		//the commands were determined manually. They take all objects and find the pressure-sensitive floor.
+		List<String> commands_to_sensitive_room = Arrays.asList(
+			"west", "west", "west", "west", "take dark matter", "east", 
+			"south", "take fixed point", "west", "take food ration", "east", 
+			"north", "south", "north", "east", "south", "take astronaut ice cream", 
+			"west", "east", "south", "take polygon", "east", "take easter egg", 
+			"north", "south", "east", "take weather machine", "north", "south", "west", 
+			"north", "south", "west", "north", "north", "east", "south", "east", "south", 
+			"north", "west", "south", "south", "take asterisk", "north", "north", "north", 
+			"west", "south", "south", "east", "east", "north");
+		LinkedList<String> way_presure_sensitive_room = new LinkedList<>(commands_to_sensitive_room);
 
-        List<Computer> computers = new ArrayList<>();
+		List<String> objects = Arrays.asList("dark matter", "fixed point", "food ration", "astronaut ice cream", "polygon", "easter egg", "weather machine", "asterisk");
 
-        for(int address = 0; address < 50; address++){
-            Computer computer = new Computer();
-            computer.getStdin().add(new Long(address));
-            computers.add(computer);
-        }
-
-        int y = -1;
-        while(y == -1){
-            for(int i = 0; i < computers.size(); i++){
-                Computer computer = computers.get(i);
-
-                if(computer.getStdin().size() == 0) 
-                    computer.getStdin().add(new Long(-1));
-                computer.step();
-
-                if(computer.getStdout().size() == 3){
-                    Long address = computer.getStdout().poll();
-                    Long x_value = computer.getStdout().poll();
-                    Long y_value = computer.getStdout().poll();
-
-                    if(address == 255){
-                        y = y_value.intValue();
-                        break;
-                    }
-                    computers.get(address.intValue()).getStdin().add(x_value);
-                    computers.get(address.intValue()).getStdin().add(y_value);
-
-                }
+		//list of all possible command sets
+		List<String> CMDS = new ArrayList<>();
+        for(String temp: objects)
+			CMDS.add(MessageFormat.format("drop {0}", temp));
+			
+        Set<String> set = new LinkedHashSet<>();
+        for(int i = 0; i < Math.pow(2, objects.size()); i++){
+            for(int h = 0; h < objects.size(); h++){
+                if(((i >> h)&1) == 1)
+                    set.add(objects.get(h));
             }
+            System.out.println(i + " " + set);
+            for(String temp: set)
+                CMDS.add(MessageFormat.format("take {0}", temp)); 
+            CMDS.add("north");
+            for(String temp: set)
+                CMDS.add(MessageFormat.format("drop {0}", temp));
+            set.clear();
         }
 
-        System.out.println(y);
+		
+        while(!computer.isHalted()){
+            try {
+				computer.step();
+            } catch (Exception e) {
+				print_output(computer.getStdout());
+				input_commands(scanner, computer, commands, way_presure_sensitive_room, CMDS);
+            }
+		}
+		scanner.close();
+		print_output(computer.getStdout());
 
 	}
 
@@ -303,7 +396,7 @@ class Computer {
 
 	public void simulate(){
 		while(!this.halted){
-                step();
+			step();
         }
 	}
 
