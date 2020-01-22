@@ -19,10 +19,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class p1 {
+public class p2 {
 
     private static void print_output(LinkedList<Long> stdout){
 		String text = "";
+		// String raw_ascci = "";
         for(Long c: stdout){
 			if(c.intValue() <= 255)
 				text+=(char)c.intValue();
@@ -30,41 +31,43 @@ public class p1 {
 				text+=c.intValue();
         }
 		System.out.println(text);
+		// System.out.println(raw_ascci);
         stdout.clear();
-    }
+	}
+	
+	/*
+		D AND (H OR (E AND (F OR I)))
+		
+
+		KEY CASE
+		D=TRUE, H=FALSE, E=TRUE, F=TRUE, H=FALSE, I=FALSE	
+		@   		
+		##.###...#
+			   @  
+			##.###...#
+				    @		 
+				##.###...#
+					     @		 
+					##.###...#
+	*/
 
 
 	public static void main(String[] args) {
 		Computer computer = new Computer();
-		//it is mandatory that the fourth tile has ground
-		/*
-			CASE 1:
-					A, B, C HAS NOT GROUND
-					@
-					#...#
-			CASE 2:
-					A HAS NOT GROUND
-					@
-					#.###
-			CASE 3:
-					B, C HAS NOT GROUND (IF THE FIFTH TILE HAS NOT GROUND IT MUST JUMP)
-					@
-					##..#.#
-			CASE 4:
-					C HAS NOT GROUND (IF THE FIFTH TILE HAS NOT GROUND IT MUST JUMP)
-					@
-					###.#..#
-			ETC...
-		*/
-		
 		List<String> instructions = new ArrayList<>();
-		instructions.add("NOT C J");	//C HAS GROUND?
-		instructions.add("NOT D T");	//D HAS NOT GROUND?
+		instructions.add("NOT A J");	//C HAS GROUND?
+		instructions.add("NOT B T");	//D HAS NOT GROUND?
 		instructions.add("OR T J");		//it can jump?
-		instructions.add("NOT A T");	//A HAS NOT GROUND?
+		instructions.add("NOT C T");	//A HAS NOT GROUND?
 		instructions.add("OR T J");		//it can jump?
 		instructions.add("AND D J");	//it is mandatory that the fourth tile has ground
-        instructions.add("WALK");
+		instructions.add("NOT I T");
+		instructions.add("NOT T T");
+		instructions.add("OR F T");
+		instructions.add("AND E T");
+		instructions.add("OR H T");
+		instructions.add("AND T J");
+        instructions.add("RUN");
 
         for(String line: instructions){
             for(char c: line.toCharArray())
